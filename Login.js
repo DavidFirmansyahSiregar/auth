@@ -5,6 +5,7 @@ import { userLogin } from "../_services";
 import { Layout, Button, Form, Input } from "antd";
 import "./auth.css"
 
+
 const { Header, Content, Footer} = Layout;
 const layout = {
     labelCol: { span: 8 },
@@ -16,12 +17,27 @@ const validateMessages = {
 
 export const Login = () => {
     const navigate = useNavigate();
+    const [loadings, setLoadings] = useState([]);
+
+    const enterLoading = (index) => {
+        setLoadings((prevLoadings) => {
+          const newLoadings = [...prevLoadings];
+          newLoadings[index] = true;
+          return newLoadings;
+        });
+        setTimeout(() => {
+          setLoadings((prevLoadings) => {
+            const newLoadings = [...prevLoadings];
+            newLoadings[index] = false;
+            return newLoadings;
+          });
+        }, 6000);
+      };
 
     const [userCredentials, setUserCredentials] = useState({user: "", password: "", email: "",});
     // console.log(userCredentials);
-    const onFinish = (values) => {
-        console.log(values);
-      };
+    const onFinish =()=> userLogin(userCredentials, navigate)
+    localStorage.setItem('username', JSON.stringify(userCredentials.user))
 
     return (
         <Layout>
@@ -51,7 +67,7 @@ export const Login = () => {
                     name={['password']}
                     label="password"
                     onChange={(e) => {
-                        setUserCredentials({...userCredentials, user: e.target.value})
+                        setUserCredentials({...userCredentials, password: e.target.value})
                     }}
                     rules={[
       
@@ -66,12 +82,15 @@ export const Login = () => {
             </div>
 
             <Form.Item 
-            wrapperCol={{ ...layout.wrapperCol, offset: 8 }}>
-            <Button 
-                type="primary" 
+            wrapperCol={{ ...layout.wrapperCol, offset: 10 }}>
+            <Button
+                type="primary"
                 htmlType="submit"
+                size="default"
+                loading={loadings[0]}
+                disabled={!userCredentials.user || !userCredentials.password ? true : false }
                 onClick={() => {
-                    userLogin(userCredentials, navigate);
+                    enterLoading(0)
                 }}
             >
             <b>LOGIN</b>

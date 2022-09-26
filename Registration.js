@@ -115,16 +115,23 @@
 // };
 
 import { useRef, useState, useEffect } from "react";
+// import { DownloadOutlined } from '@ant-design/icons';
 import { faCheck, faTimes, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { userRegistration } from "../_services";
 import { useNavigate } from "react-router-dom";
+import { Button, Layout } from "antd"
+
 
 const USER_REGEX = /^[A-z][A-z0-9-_]{3,23}$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 const EMAIL_REGEX = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
+const { Header, Content,} = Layout;
+
 export const Registration = () => {
+    const [loadings, setLoadings] = useState([]);
+
     const userRef = useRef();
     const errRef = useRef();
     const navigate = useNavigate();
@@ -168,47 +175,28 @@ export const Registration = () => {
     useEffect(() => {
         setErrMsg('');
     }, [userName, email, password, matchPwd])
-
-    // const handleSubmit = (e) => {
-    //     e.preventDefault();
-    //     // if button enabled with JS hack
-    //     const v1 = USER_REGEX.test(userName);
-    //     const v2 = PWD_REGEX.test(password);
-    //     if (!v1 || !v2) {
-    //         setErrMsg("Invalid Entry");
-    //         return;
-    //     }
-    // //     try {
-    // //         const response = await axios.post("https://nodejs-backend-api-playground.herokuapp.com/auth/user/registration",
-    // //             JSON.stringify({ userName, password, email}),
-    // //             {
-    // //                 headers: { 'Content-Type': 'application/json' },
-    // //                 withCredentials: true
-    // //             }
-    // //         );
-    // //         // TODO: remove console.logs before deployment
-    // //         console.log(JSON.stringify(response?.data));
-    // //         //console.log(JSON.stringify(response))
-    // //         setSuccess(true);
-    // //         //clear state and controlled inputs
-    // //         setUserName('');
-    // //         setEmail('');
-    // //         setPassword('');
-    // //         setMatchPwd('');
-    // //     } catch (err) {
-    // //         if (!err?.response) {
-    // //             setErrMsg('No Server Response');
-    // //         } else if (err.response?.status === 400) {
-    // //             setErrMsg('Username Taken');
-    // //         } else {
-    // //             setErrMsg('Registration Failed')
-    // //         }
-    // //         errRef.current.focus();
-    // //     }
-    // // }
-
+    
+    const enterLoading = (index) => {
+        setLoadings((prevLoadings) => {
+          const newLoadings = [...prevLoadings];
+          newLoadings[index] = true;
+          return newLoadings;
+        });
+        setTimeout(() => {
+          setLoadings((prevLoadings) => {
+            const newLoadings = [...prevLoadings];
+            newLoadings[index] = false;
+            return newLoadings;
+          });
+        }, 6000);
+      };
+    
+    const onFinish = () => userRegistration(userName, email, password, navigate)
 
     return (
+        <Layout>
+        <Header></Header>
+        <Content>
         <div className="registration-page-container">
         <>
             {success ? (
@@ -225,8 +213,8 @@ export const Registration = () => {
                         className={errMsg ? "errmsg" : "offscreen"} 
                         aria-live="assertive">{errMsg}
                     </p>
-                    <h1>Register</h1>
-                    <form onSubmit={userRegistration}>
+                    <h1>REGISTRATION</h1>
+                    <form onSubmit={onFinish}>
                         <label htmlFor="username">
                             Username:
                             <FontAwesomeIcon icon={faCheck} className={validName ? "valid" : "hide"} />
@@ -275,7 +263,6 @@ export const Registration = () => {
                             example "cik@gmail.com".<br />
                         </p>
 
-
                         <label htmlFor="password">
                             Password:
                             <FontAwesomeIcon icon={faCheck} className={validPwd ? "valid" : "hide"} />
@@ -320,13 +307,17 @@ export const Registration = () => {
                             <FontAwesomeIcon icon={faInfoCircle} />
                             Must match the first password input field.
                         </p>
-
-                        <button 
+                        <br></br>
+                        <Button
+                            htmlType="submit"
+                            type= "primary"
+                            size="default"
+                            loading={loadings[0]}
                             disabled={!validName || !validEmail || !validPwd || !validMatch ? true : false}
-                            onClick={() => {
-                                userRegistration(userName, password, email, navigate);
-                            }}
-                            >Sign Up</button>
+                            onClick={() => enterLoading(0)}
+                            >
+                                    Sign Up
+                        </Button>
                     </form>
                     <p>
                     
@@ -340,6 +331,8 @@ export const Registration = () => {
             )}
         </>
         </div>
+        </Content>
+        </Layout>
     )
 }
 
